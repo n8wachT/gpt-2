@@ -78,7 +78,6 @@ def main():
     sess, out_op = gpt2_session_and_out_op()
 
     def reply(update: telegram.Update, context: telegram.ext.CallbackContext):
-        # return reply_with_gpt2(update, context, _gpt2_output)
         return reply_with_gpt2(update, context, lambda x: gpt2_generate(x, sess, out_op))
 
     dp.add_handler(MessageHandler(Filters.text, reply))
