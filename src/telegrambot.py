@@ -66,17 +66,14 @@ def start(update: telegram.Update, context: telegram.ext.CallbackContext):
 def reply_with_gpt2(update: telegram.Update, context: telegram.ext.CallbackContext, gpt2_output):
     logger.info("Received a message.")
     context.bot.send_chat_action(chat_id=update.effective_message.chat_id, action=ChatAction.TYPING)
-    text = update.message.text
+    text = update.message.text.replace("@{}".format(context.bot.username), "")
     output = gpt2_output(text)
     update.message.reply_text(output, quote=True)
 
 
 class HandleMentionsOnly(BaseFilter):
-    def __init__(self, bot_name):
-        self.bot_name = bot_name
-
     def filter(self, message: telegram.Message):
-        return any(entity.user == self.bot_name for entity in message.entities)
+        return message.bot.username in message.text
 
 
 class HandleRandomly(BaseFilter):
@@ -89,7 +86,6 @@ def main():
     if token is None:
         logger.error("You need to set the environment variable TELEGRAM_BOT_SECRET to be able to run this script.")
     updater = Updater(token, use_context=True)
-    bot_name = updater.bot.name
     dp = updater.dispatcher
     dp.add_handler(CommandHandler("start", start))
 
@@ -100,7 +96,7 @@ def main():
 
     dp.add_handler(MessageHandler(
         (Filters.text &
-         (Filters.private | (Filters.group & HandleRandomly()) | HandleMentionsOnly(bot_name))),
+         (Filters.private | (Filters.group & HandleRandomly()) | HandleMentionsOnly())),
         reply))
     updater.start_polling()
     updater.idle()
