@@ -3,6 +3,8 @@ import json
 import logging
 import tensorflow as tf
 import numpy as np
+from telegram import ChatAction
+
 import sample
 import model
 import encoder
@@ -63,14 +65,23 @@ def start(update: telegram.Update, context: telegram.ext.CallbackContext):
 
 def reply_with_gpt2(update: telegram.Update, context: telegram.ext.CallbackContext, gpt2_output):
     logger.info("Received a message.")
+    context.bot.send_chat_action(chat_id=update.effective_message.chat_id, action=ChatAction.TYPING)
     text = update.message.text
     output = gpt2_output(text)
     update.message.reply_text(output, quote=True)
 
 
+class HandleMentionsOnly(BaseFilter):
+    def __init__(self, bot_name):
+        self.bot_name = bot_name
+
+    def filter(self, update):
+        return update.message.text.contains(self.bot_name)
+
+
 class HandleRandomly(BaseFilter):
     def filter(self, update):
-        return random.random() <= 0.05
+        return random.random() <= 0.10
 
 
 def main():
@@ -78,6 +89,7 @@ def main():
     if token is None:
         logger.error("You need to set the environment variable TELEGRAM_BOT_SECRET to be able to run this script.")
     updater = Updater(token, use_context=True)
+    bot_name = updater.bot.name
     dp = updater.dispatcher
     dp.add_handler(CommandHandler("start", start))
 
@@ -86,7 +98,10 @@ def main():
     def reply(update: telegram.Update, context: telegram.ext.CallbackContext):
         return reply_with_gpt2(update, context, lambda x: gpt2_generate(x, sess, out_op))
 
-    dp.add_handler(MessageHandler((Filters.text & (Filters.private | (Filters.group & HandleRandomly()))), reply))
+    dp.add_handler(MessageHandler(
+        (Filters.text &
+         (Filters.private | (Filters.group & HandleRandomly()) | HandleMentionsOnly(bot_name))),
+        reply))
     updater.start_polling()
     updater.idle()
 
