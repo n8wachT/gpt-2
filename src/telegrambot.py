@@ -18,7 +18,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 
-def gpt2_session_and_out_op(seed=None, model_name='117M', length=150, temperature=1, top_k=40):
+def gpt2_session_and_out_op(seed=None, model_name='117M', length=75, temperature=1, top_k=40):
     batch_size = 1
     hparams = model.default_hparams()
     with open(os.path.join('models', model_name, 'hparams.json')) as f:
@@ -75,8 +75,8 @@ class HandleMentionsOnly(BaseFilter):
     def __init__(self, bot_name):
         self.bot_name = bot_name
 
-    def filter(self, update):
-        return update.message.text.contains(self.bot_name)
+    def filter(self, message: telegram.Message):
+        return any(entity.user == self.bot_name for entity in message.entities)
 
 
 class HandleRandomly(BaseFilter):
