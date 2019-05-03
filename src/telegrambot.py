@@ -7,7 +7,8 @@ import sample
 import model
 import encoder
 import telegram
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+import random
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, BaseFilter
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
@@ -67,6 +68,11 @@ def reply_with_gpt2(update: telegram.Update, context: telegram.ext.CallbackConte
     update.message.reply_text(output, quote=True)
 
 
+class HandleRandomly(BaseFilter):
+    def filter(self, update):
+        return random.random() <= 0.05
+
+
 def main():
     token = os.environ.get("TELEGRAM_BOT_SECRET")
     if token is None:
@@ -80,7 +86,7 @@ def main():
     def reply(update: telegram.Update, context: telegram.ext.CallbackContext):
         return reply_with_gpt2(update, context, lambda x: gpt2_generate(x, sess, out_op))
 
-    dp.add_handler(MessageHandler(Filters.text, reply))
+    dp.add_handler(MessageHandler((Filters.text & (Filters.private | (Filters.group & HandleRandomly()))), reply))
     updater.start_polling()
     updater.idle()
 
