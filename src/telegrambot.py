@@ -18,7 +18,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 
-def gpt2_session_and_out_op(seed=None, model_name='117M', length=75, temperature=1, top_k=40):
+def gpt2_session_and_out_op(seed=None, model_name='345M', length=75, temperature=1, top_k=40):
     batch_size = 1
     hparams = model.default_hparams()
     with open(os.path.join('models', model_name, 'hparams.json')) as f:
@@ -47,7 +47,7 @@ def gpt2_session_and_out_op(seed=None, model_name='117M', length=75, temperature
     return sess, out_op
 
 
-def gpt2_generate(raw_text, sess, out_op, model_name='117M'):
+def gpt2_generate(raw_text, sess, out_op, model_name='345M'):
     enc = encoder.get_encoder(model_name)
     context_tokens = enc.encode(raw_text)
     out = sess.run(out_op, feed_dict={
@@ -58,8 +58,8 @@ def gpt2_generate(raw_text, sess, out_op, model_name='117M'):
 
 
 def start(update: telegram.Update, context: telegram.ext.CallbackContext):
-    update.message.reply_text("Hello I'm a bot that conditions the GPT2-117M"
-                              " (the smallest GPT-2 model) on your messages. I will reply to you by "
+    update.message.reply_text("Hello I'm a bot that conditions the GPT2-345M"
+                              " on your messages. I will reply to you by "
                               "continuing the message you sent me.")
 
 
