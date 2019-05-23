@@ -48,7 +48,9 @@ def gpt2_session_and_out_op(seed=None, model_name='345M', length=75, temperature
 
 
 def gpt2_generate(raw_text, sess, out_op, model_name='345M'):
-    enc = encoder.get_encoder(model_name)
+    this_dir = os.path.dirname(os.path.realpath(__file__))
+
+    enc = encoder.get_encoder(model_name, os.path.join(this_dir,"../models/345M/"))
     context_tokens = enc.encode(raw_text)
     out = sess.run(out_op, feed_dict={
         'context:0': [context_tokens]})
