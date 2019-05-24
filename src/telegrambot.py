@@ -72,7 +72,7 @@ def reply_with_gpt2(update: telegram.Update, context: telegram.ext.CallbackConte
     output = gpt2_output(text)
 
     punctuation_characters = "!?."
-    last_occurrences = [output.rindex(x) for x in punctuation_characters]
+    last_occurrences = [output.rfind(x) for x in punctuation_characters]
     output = output[:max(last_occurrences) + 1]
     output = output.split("<|endoftext|>")[0]
     update.message.reply_text(output, quote=True)
