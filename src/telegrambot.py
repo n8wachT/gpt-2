@@ -70,6 +70,8 @@ def reply_with_gpt2(update: telegram.Update, context: telegram.ext.CallbackConte
     context.bot.send_chat_action(chat_id=update.effective_message.chat_id, action=ChatAction.TYPING)
     text = update.message.text.replace("@{}".format(context.bot.username), "")
     output = gpt2_output(text)
+    output = output.split(".")[:-1]
+    output = output.split("<|endoftext|>")[:-1]
     update.message.reply_text(output, quote=True)
 
 
